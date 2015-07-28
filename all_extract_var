@@ -1,0 +1,36 @@
+#!/bin/bash 
+
+varnames=( 'REV' 'RETC' 'FONSET1' 'FONSET2' 'FONSET3' 'FONSET' 'DNU' 'SIJSQ' 'DNUY2' )
+varlen=${#varnames[@]} 
+varnum=( 0 3 4 5 6 7 8 9 10 11 )  # This array has an extra entry to start the sed at 0
+
+dirRE=$(find . -name 'RE*' -type d)
+for dirR in $dirRE ; do 
+	cd $dirR
+	dirAlph=$(find . -name 'AoA*' -type d)
+	read RE NumR<<<$(IFS="E"; echo $dirR)
+		for dirA in $dirAlph ; do	
+			cd $dirA
+			cp ../../Base/naca.3.inp .
+		 	read AoA NumA<<<$(IFS="_"; echo $dirA)
+                        sed "s/ALPHA = 0.0/ALPHA = $NumA/g" < naca.3.inp > temp
+                        sed "s/REY = 0.0/REY = $NumR/g" < temp > temp2
+                        mv temp2 naca.3.inp 
+                        for (( i=0; i<${varlen}; i++ )) ; do
+                	        sed "s/OUTVAR = ${varnum[i]}/OUTVAR = ${varnum[i+1]}/g" < naca.3.inp > temp
+                                mv temp naca.3.inp
+			        overrun naca.3 > output.out
+			        echo ${varnames[i]} > finp 
+			        extractvar < finp
+                        done		
+			cd .. 	
+                done 
+	cd ..	
+done
+
+
+
+
+
+
+
